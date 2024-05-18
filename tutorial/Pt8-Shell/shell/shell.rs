@@ -54,6 +54,7 @@ const COLOR_LIGHT_GREY: u8 = 7;
 const COLOR_LIGHT_GREEN: u8 = 10;
 const COLOR_DARK_GREY: u8 = 17;
 const COLOR_CYAN: u8 = 3;
+const COLOR_PINK: u8 = 13;
 
 static mut SHELL_TEXT_POSITION: usize = 0;
 static mut SHELL_TEXT_BUFFER: [char; 1000] = [' '; 1000];
@@ -145,17 +146,17 @@ unsafe fn shellCommand(textBufferPos: usize) {
         shellWriteStr(SHELL_TEXT_POSITION, "\npong\n", COLOR_LIGHT_GREY);
     } else if shellCheckCommand(textBufferPos, "ls") {
         shellNewLine();
-        let bytes: &[u8] = "".as_bytes(); // + b"\0"; // caution: C-char array is not null-terminated
+        let bytes: &[u8] = "/".as_bytes(); // + b"\0"; // caution: C-char array is not null-terminated
         let name: *const cty::c_char = bytes.as_ptr() as *const i8;
         ataList(name);
     } else if shellCheckCommand(shellGetLineStart() + 6, "rf") { // note: checkCommand expects position after the command, add prompt
       let beforeParam = shellGetLineStart() + 7;
       let afterParam = SHELL_TEXT_POSITION;
-      shellWriteStr(SHELL_TEXT_POSITION, "\nRead: ", COLOR_LIGHT_GREY);
+      //shellWriteStr(SHELL_TEXT_POSITION, "\nRead: ", COLOR_LIGHT_GREY);
       let mut param: [cty::c_char;255] = [0; 255];
       for i in beforeParam..afterParam {
         if i < SHELL_TEXT_BUFFER.len() && i > 0 && i - beforeParam < 255{
-          shellWriteChar(SHELL_TEXT_BUFFER[i], 13);
+          //shellWriteChar(SHELL_TEXT_BUFFER[i], COLOR_PINK);
           param[i - beforeParam] = SHELL_TEXT_BUFFER[i] as i8;
         }
       }

@@ -83,3 +83,13 @@ License notice for Source Code Pro
 These fonts are licensed under the Open Font License.
 You can use them in your products & projects – print or digital, commercial or otherwise.
 This isn't legal advice, please consider consulting a lawyer and see the full license for all details.
+
+License notice for Protected Mode BIOS Call Functionailty v2.0
+--------------------------------------------------------------
+by Napalm
+
+If you wish to use all or part of this code you must agree
+to the license at the following URL.
+
+License: http://creativecommons.org/licenses/by-sa/2.0/uk/
+

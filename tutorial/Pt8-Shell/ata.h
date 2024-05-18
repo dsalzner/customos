@@ -325,7 +325,7 @@ void ataList(char * path) {
     }
     if (info.fname[0] == 0)
       break;
-    printf("- %s\n", info.fname);
+    printf("%s\n", info.fname);
   }
   f_closedir(&dir);
 }
@@ -353,7 +353,7 @@ void ataShowFileContents(char * fileName) {
   f_close(&file);
   buffer[fileSize] = '\0';
   if (res == FR_OK) {
-    printf("buffer %s\n", buffer);
+    printf("%s", buffer);
   }
 }
 

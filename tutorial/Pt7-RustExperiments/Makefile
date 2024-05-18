@@ -9,6 +9,8 @@ ata.h common.h gdt.h idt.h isrs.h keyboard.h multiboot.h printf.h ramdisk.h term
 
 OBJ := boot.o printf.o kernel.o fatfs/fatfs_ff.o fatfs/fatfs_ffunicode.o graphics/graphics.o shell/shell.o
 
+SHELL := /bin/bash
+
 all: run
 
 run: image
@@ -50,10 +52,11 @@ fatfs_ff.o: fatfs/fatfs_ff.c fatfs/fatfs_ff.h
 fatfs_ffunicode.o: fatfs/fatfs_ffunicode.c fatfs/fatfs_ffunicode.h
 	${CC} -c fatfs/fatfs_ffunicode.c -o fatfs_ffunicode.o ${CFLAGS}
 
-# rustup default nightly
-# rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
-shell/shell.o: shell/shell.rs shell/fontsourcecodepro_light_10pt.rs
-	cd shell/ && cargo rustc --target i686-unknown-none-gnu.json -Z build-std --release -- --emit=obj && cp target/i686-unknown-none-gnu/release/libshell.rlib shell.o
+shell/shell.o: shell/shell.rs
+	./rust-deps.sh
+	source "${HOME}/.cargo/env" && rustup override set nightly
+	source "${HOME}/.cargo/env" && rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+	source "${HOME}/.cargo/env" && cd shell/ && cargo rustc --target i686-unknown-none-gnu.json -Z build-std --release -- --emit=obj && cp target/i686-unknown-none-gnu/release/deps/shell-*.o shell.o
 
 clean:
 	rm -f myos.bin

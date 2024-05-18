@@ -27,8 +27,8 @@ Each part either has a script
 ./build-and-boot.sh
 ```
 
-or it's own makefile
+or it's own Makefile. With these Makefiles it's often best to clean first.
 
 ```
-make
+make clean && make
 ```
