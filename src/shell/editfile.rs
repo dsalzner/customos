@@ -346,14 +346,13 @@ pub unsafe fn editorUpdate() {
     let mut endY = linesPerScreen;
 
     if cursory > linesPerScreen {
-      endY = cursory;
-      startY = endY - linesPerScreen;
+      endY = cursory + 1;
+      startY = endY - linesPerScreen + 1;
     }
     
     // --
 
     //let startLineBufferPos = virtualPosToBufferPos(0, startY); // possible optimization, search only after line
-    
     let mut currentChr = ' ';
     for i in 0..getBufferSize() + 1 {
       let (x,y) = bufferPosToVirtualPos(i);

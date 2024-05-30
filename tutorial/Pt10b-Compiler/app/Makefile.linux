@@ -1,0 +1,5 @@
+all:
+	g++ -g example.c -o example && ./example && echo ""
+	g++ -g sirpinski.c -o sirpinski && ./sirpinski && echo ""
+	g++ -g fibonacci.c -o fibonacci && ./fibonacci && echo ""
+	g++ -g numbers.c -o numbers && ./numbers && echo ""

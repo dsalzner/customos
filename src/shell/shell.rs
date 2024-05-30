@@ -72,7 +72,9 @@ static mut SHELL_CHANGED: bool = true;
 
 extern "C" {
   fn ataList(path: *const cty::c_char);
-  fn ataShowFileContents(path: *const cty::c_char);
+  fn ataShowFileContents(filename: *const cty::c_char);
+  fn tinyccRunCode(filename: *const cty::c_char);
+  fn tinyccRunExample();
 }
 
 #[derive(PartialEq)]
@@ -108,7 +110,10 @@ pub unsafe extern "C" fn shellWriteChar(ch: char, color: u8) {
     shellNewLine();
     return;
   }
-
+  if ch == '\0' {
+    return;
+  }
+  
   if SHELL_TEXT_POSITION > SHELL_TEXT_BUFFER.len() - 1 {
       return;
   }
@@ -245,7 +250,15 @@ unsafe fn shellCommand() {
 
     shellWriteStr("- ed ", COLOR_PINK);
     shellWriteStr("<filename>", COLOR_CYAN);
-    shellWriteStr(" - open text editor", COLOR_LIGHT_GREY);
+    shellWriteStr(" - open text editor\n", COLOR_LIGHT_GREY);
+
+    shellWriteStr("- re ", COLOR_PINK);
+    shellWriteStr("          ", COLOR_CYAN);
+    shellWriteStr(" - run example code\n", COLOR_LIGHT_GREY);
+
+    shellWriteStr("- rc ", COLOR_PINK);
+    shellWriteStr("<*.c file>", COLOR_CYAN);
+    shellWriteStr(" - run C code", COLOR_LIGHT_GREY);
 
   } else if shellCheckCommand("ping") {
       shellWriteStr("\npong", COLOR_LIGHT_GREY);
@@ -263,7 +276,7 @@ unsafe fn shellCommand() {
         shellNewLine();
         ataList(param_c_ptr);
       }
-  } else if shellCheckCommand("rf") { // note: checkCommand expects position after the command, add prompt
+  } else if shellCheckCommand("rf") {
     let param_c_ptr = shellCommandGetParamC("rf");
     shellNewLine();
     ataShowFileContents(param_c_ptr);
@@ -278,6 +291,12 @@ unsafe fn shellCommand() {
     let (param, length) = shellCommandGetParam("sp");
     editorSetFilename(&param, length);
     state = EState::EDITFILE;
+  } else if shellCheckCommand("rc") {
+    let param_c_ptr = shellCommandGetParamC("rc");
+    tinyccRunCode(param_c_ptr);
+  } else if shellCheckCommand("re") {
+    shellNewLine();
+    tinyccRunExample();
   }
   shellShowPrompt();
 }

@@ -10,8 +10,9 @@ Current Features:
 * can read and write to fat32 disk through a custom built lean PCI- and IDE-driver and the fatfs filesystem libraries
 * color graphics with 320x200 pixel and 256-bit colour
 * a terminal/shell written in Rust that supports a small command set: list directory (```ls <path>```), read file (```rf <filename>```), ...
+* a small C compiler is built-in so functionality can be extended with code written inside of the CustomOS
 
-![CustomOS showing a terminal and reading/writing to disk](img/terminal-readfile.gif)
+![CustomOS showing editing source code and then running it](img/customos-compiler.gif)
 
 For technical information see:
 
@@ -24,6 +25,7 @@ For technical information see:
 * [Pt7-Shell-Rust](https://www.dennissalzner.de/programming/2024/01/28/So-CustomOsPt7-Shell-Rust.html)
 * [Pt8-Terminal](https://www.dennissalzner.de/programming/2024/02/04/So-CustomOsPt8-Terminal.html)
 * [Pt9-Enhancements](https://www.dennissalzner.de/programming/2024/02/04/Sa-CustomOsPt9-Enhancements.html)
+* [Pt10-EditorCompiler](https://www.dennissalzner.de/programming/2024/05/22/Mi-CustomOsPt10-Compiler.html)
 
 ## Dependencies
 
@@ -43,10 +45,26 @@ Anyone is welcome to contribute, see [Guide on Contributing](CONTRIBUTING.md)
 
 ## Releases
 
+### 2024-05-30
+
+* added a C-Code compiler so functionality can be extended with code written inside of the CustomOS
+* added example applications
+
+known bugs/stability issues:
+* editing/running large source code fails due to limitations in file read/write
+* filenames longer than 9 chars don't work reliably
+* main shell line breaks occasionally slide
+* QEmu boot loops on approx. every 10th boot
+* there's a considerable amount of compiler warnings during compilation
+
+critical features missing:
+* remove/move/copy files functionality
+* higher screen resolution
+
 ### 2024-05-18
 
 * added a basic text editor application written in Rust to read/write/edit files
-* usability improvements for shell scripts and makefiles
+* usability improvements for shell scripts and Makefiles
 * fixed some bugs
 
 ### 2024-05-03
