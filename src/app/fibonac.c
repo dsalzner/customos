@@ -1,17 +1,12 @@
-#ifndef __linux__
+#ifndef __GNUC__
 void* (*putchar)(char);
-const char * name() {
-    return "Fibonacci";
-}
+
 void setPutCharCallback(void* (*putchar_)(char)) {
   putchar = putchar_;
 }
 #else
-#include <cstdio>
+#include <stdio.h>
 void init();
-void putchar(char ch) {
-  printf("%c", ch);
-}
 int main() {
   init();
   return 0;
@@ -19,6 +14,10 @@ int main() {
 #endif
 
 // --
+
+const char * name() {
+    return "Fibonacci";
+}
 
 int atoi(char *str) {
   int res = 0;
@@ -28,21 +27,19 @@ int atoi(char *str) {
   return res;
 }
 
-unsigned int strlen(const char *str) {
-  const char *p;
-  if(str == NULL) {
-    return 0;
+unsigned int strlen_(const char *str) {
+  for(unsigned int i = 0; i < 100; i++) { // -- capped at 100
+    if(str[i] == '\0') {
+      return i;
+    }
   }
-  for (p = str; *p != '\0'; p++) {
-    continue;
-  }
-  return p - str;
+  return 0;
 }
 
 void reverse(char str[]) {
-  int i, j;
+  unsigned int i, j;
   char ch;
-  for (i = 0, j = strlen(str) - 1; i < j; i++, j--) {
+  for (i = 0, j = strlen_(str) - 1; i < j; i++, j--) {
     ch = str[i];
     str[i] = str[j];
     str[j] = ch;
@@ -68,7 +65,7 @@ void itoa(int number, char * str) {
 
 void putstr(const char *str) {
   int i = 0;
-  for(i = 0; i < strlen(str); i++) {
+  for(i = 0; i < strlen_(str); i++) {
     putchar(str[i]);
   }
 }

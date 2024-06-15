@@ -479,11 +479,18 @@ static void strcat_printf(char *buf, int buf_size, const char *fmt, ...)
 
 static void error1(TCCState *s1, int is_warning, const char *fmt, va_list ap)
 {
+    printf("[E] libtcc.c::error1 - during run\n");
+    #ifndef CUSTOMOS
+    fflush(NULL);
+    #else
+    graphicsFlush();
+    #endif
+
     char buf[2048];
     BufferedFile **pf, *f;
 
     buf[0] = '\0';
-    /* use upper file if inline ":asm:" or token ":paste:" */
+    // use upper file if inline ":asm:" or token ":paste:"
     for (f = file; f && f->filename[0] == ':'; f = f->prev)
      ;
     if (f) {
@@ -507,13 +514,13 @@ static void error1(TCCState *s1, int is_warning, const char *fmt, va_list ap)
     strcat_vprintf(buf, sizeof(buf), fmt, ap);
 
     if (!s1->error_func) {
-        /* default case: stderr */
+	// default case: stderr
         if (s1->output_type == TCC_OUTPUT_PREPROCESS && s1->ppfp == stdout)
-            /* print a newline during tcc -E */
+	    // print a newline during tcc -E
             printf("\n"), fflush(stdout);
-        fflush(stdout); /* flush -v output */
+	fflush(stdout); // flush -v output
         fprintf(stderr, "%s\n", buf);
-        fflush(stderr); /* print error/warning now (win32) */
+	fflush(stderr); // print error/warning now (win32)
     } else {
         s1->error_func(s1->error_opaque, buf);
     }
@@ -539,19 +546,41 @@ PUB_FUNC void tcc_error_noabort(const char *fmt, ...)
     va_end(ap);
 }
 
+extern uint8_t TCC_ERROR;
+
 PUB_FUNC void tcc_error(const char *fmt, ...)
 {
+    printf("[E] libtc.c::tcc_error: ");
+    TCC_ERROR = 1;
+
+    va_list ap;
+    va_start(ap, fmt);
+    printf(fmt, ap);
+    va_end(ap);
+
+    printf("\n");
+
+    #ifndef CUSTOMOS
+    fflush(NULL);
+    #else
+    graphicsFlush();
+    #endif
+
     TCCState *s1 = tcc_state;
+
+    /*
     va_list ap;
 
     va_start(ap, fmt);
     error1(s1, 0, fmt, ap);
     va_end(ap);
-    /* better than nothing: in some cases, we accept to handle errors */
+    */
+
+    // better than nothing: in some cases, we accept to handle errors
     if (s1->error_set_jmp_enabled) {
         longjmp(s1->error_jmp_buf, 1);
     } else {
-        /* XXX: eliminate this someday */
+	// XXX: eliminate this someday
         exit(1);
     }
 }

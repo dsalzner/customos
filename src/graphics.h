@@ -36,10 +36,15 @@ typedef struct __attribute__ ((packed)) {
 
 extern void int32(unsigned char intnum, regs16_t *regs);
 
-uint16_t screenWidth = 320;
-uint16_t screenHeight = 200;
+uint16_t screenWidth = 640;
+uint16_t screenHeight = 480;
 
-char * screenBuffer = NULL;
+char screenBlue[640*480/8];
+char screenGreen[640*480/8];
+char screenRed[640*480/8];
+char screenGrey[640*480/8];
+
+bool graphicsBufferDirty[640*480/8];
 
 uint16_t fontWidth(uint8_t fontNo, uint16_t charArrId) {
   if(fontNo == 0) return fontRobotoMonoMedium10pt_width[charArrId];
@@ -56,7 +61,93 @@ char * fontBuffer(uint8_t fontNo, uint16_t charArrId) {
   return 0;
 }
 
-void graphicsRenderChar(char * graphicsBuffer, uint16_t x, uint16_t y, char charToWrite, uint8_t fontNo)  {
+void select_plane(uint8_t plane) {
+  asm volatile("cli");
+  outportb(0x3C4, 0x02);
+  outportb(0x3C5, (uint8_t)1 << plane);
+
+  outportb(0x3CE, 0x04);
+  outportb(0x3CF, plane);
+  asm volatile("sti");
+}
+
+void graphicsSetPixel(uint16_t x, uint16_t y, uint8_t color) {
+  if (x >= screenWidth || y >= screenHeight)
+    return;
+
+  // -- update internal buffer
+  /*
+  0 = blue
+  1 = green
+  2 = red
+  3 = grey
+
+  mixing:
+  - if 0,1,2 are set => white
+  - if 1,2 are set => yellow
+  - if 0,1 are set => cyan
+  */
+  color = color % 16; // only 4 bits allowed per pixel
+
+  char * currentScreenPlane = NULL;
+  unsigned int bytePos = (640 / 8) * y + x / 8;
+  unsigned int bitPos = 0x80 >> (x % 8);
+  unsigned int colorPlaneMask = 1;
+
+  bool changed = false;
+
+  for(unsigned int p = 0; p < 4; p++) {
+    if(p == 0) currentScreenPlane = screenBlue;
+    if(p == 1) currentScreenPlane = screenGreen;
+    if(p == 2) currentScreenPlane = screenRed;
+    if(p == 3) currentScreenPlane = screenGrey;
+
+    char oldValue = currentScreenPlane[bytePos];
+
+    if(colorPlaneMask & color) { // -- bit is set for current plane
+      currentScreenPlane[bytePos] = oldValue | bitPos; // set
+    } else {
+      currentScreenPlane[bytePos] = oldValue & ~bitPos; // unset
+    }
+
+    if(currentScreenPlane[bytePos] != oldValue) {
+      changed = true;
+    }
+
+    colorPlaneMask <<= 1;
+  }
+
+  // -- prepare transfer to graphics buffer
+  if(changed) {
+    graphicsBufferDirty[bytePos] = true;
+  }
+}
+
+void graphicsFlush() {
+  for(uint16_t bytePos = 0; bytePos < 640*480/8; bytePos++) {
+    if(graphicsBufferDirty[bytePos]) {
+
+      char * graphicsBuffer = (char *)0xA000;
+      unsigned int graphicsBufferBytePos = 40960 * 15 + bytePos; // -- graphics buffer is at end of 64k
+      char * currentScreenPlane = NULL;
+
+      for(unsigned int p = 0; p < 4; p++) {
+	select_plane(p);
+	if(p == 0) currentScreenPlane = screenBlue;
+	if(p == 1) currentScreenPlane = screenGreen;
+	if(p == 2) currentScreenPlane = screenRed;
+	if(p == 3) currentScreenPlane = screenGrey;
+
+	graphicsBuffer[graphicsBufferBytePos] = currentScreenPlane[bytePos];
+      }
+
+      graphicsBufferDirty[bytePos] = false;
+    }
+  }
+}
+
+
+void graphicsRenderChar(uint16_t x, uint16_t y, char charToWrite, uint8_t fontNo)  {
   uint16_t curx = x;
   uint16_t cury = y;
 
@@ -75,8 +166,7 @@ void graphicsRenderChar(char * graphicsBuffer, uint16_t x, uint16_t y, char char
       }
       // -- draw pixel if bit is set
       if(bits & 0x01) {
-        uint16_t pos = cury * screenWidth + curx;
-        graphicsBuffer[pos] = 1; // 1=blue
+	graphicsSetPixel(x, y, 1);
       }
 
       // -- shift to next bit
@@ -89,32 +179,25 @@ void graphicsRenderChar(char * graphicsBuffer, uint16_t x, uint16_t y, char char
 }
 
 void graphicsInit() {
-  int y;
   regs16_t regs;
-
-  regs.ax = 0x0013;
+  regs.ax = 0x0012; // mode 13h = 0x0013 = 320x200x8bpp, mode 12h = 0x0012 = 640x480x4bpp
   int32(0x10, &regs);
 
-  // -- fill screen
-  memset((char *)0xA0000, 1, (screenHeight*screenWidth));
-  screenBuffer = (char *)0xA0000;
-
-  // -- draw color bands
-  int pos = 0;
-  for(int y = 0; y < screenHeight; y++) {
-    for(int x = 0; x < screenWidth; x++) {
-      pos = y * screenWidth + x;
-      screenBuffer[pos] = 3; // 3=cyan
-    }
+  // -- clear screen buffers
+  for(uint16_t i = 0; i < 640*480/8; i++) {
+    screenBlue[i] = 0;
+    screenGreen[i] = 0;
+    screenRed[i] = 0;
+    screenGrey[i] = 0;
   }
 
   if (GRAPHICS_MODE_FROM_C == 1) {
     // -- write text
-    graphicsRenderChar(screenBuffer, 8, 10, 'H', 0);
-    graphicsRenderChar(screenBuffer, 16, 10, 'e', 0);
-    graphicsRenderChar(screenBuffer, 24, 10, 'l', 0);
-    graphicsRenderChar(screenBuffer, 32, 10, 'l', 0);
-    graphicsRenderChar(screenBuffer, 40, 10, 'o', 0);
+    graphicsRenderChar(8, 10, 'H', 0);
+    graphicsRenderChar(16, 10, 'e', 0);
+    graphicsRenderChar(24, 10, 'l', 0);
+    graphicsRenderChar(32, 10, 'l', 0);
+    graphicsRenderChar(40, 10, 'o', 0);
 
     // -- wait for key
     regs.ax = 0x0000;

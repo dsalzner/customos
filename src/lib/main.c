@@ -1,9 +1,11 @@
 #include "tinycc_compat.h"
 #include "tinycc_interpreter.h"
 
-extern char theprog[];
-
-int main() {
-  tinycc_run_code(theprog);
-  return 0;
+int main(int argc, char* argv[]) {
+  if(argc == 1) {
+    tinyccRunExample();
+  } else {
+    tinyccRunCode(argv[1]);
+  }
+	return 0;
 }

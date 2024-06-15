@@ -54,10 +54,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 int printf_hidden(const char *format, ...);
 #define COS_TINYCC_DEBUG printf_hidden
 
-void putchar(const char chr);
+#ifdef CUSTOMOS
+  void putchar(const char chr);
+#endif
 
 #ifndef CUSTOMOS
-
   #include <stdio.h>
   #include <errno.h>
   #define cos_malloc malloc
@@ -83,9 +84,10 @@ typedef signed char int8_t;
 typedef short int int16_t;
 typedef int int32_t;
 typedef long long int int64_t;
-typedef unsigned char uint8_t;
-typedef unsigned short int uint16_t;
-typedef unsigned int uint32_t;
+
+//typedef unsigned char uint8_t;
+//typedef unsigned short int uint16_t;
+//typedef unsigned int uint32_t;
 typedef unsigned long long int uint64_t;
 
 #define NULL 0
@@ -104,6 +106,7 @@ typedef unsigned long long int uint64_t;
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
+
 typedef char *va_list;
 
 typedef struct FILE {

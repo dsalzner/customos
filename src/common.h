@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define TEXT_MODE_FROM_C (0)
 #define GRAPHICS_MODE_FROM_C (0)
 #define INIT_RAMDISK (0)
+#define UNUSED(x) (void)(x)
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -129,7 +130,7 @@ void outsw(uint32_t addr, uint32_t buffer, uint32_t count) {
   __asm__ __volatile__ ("cld; rep; outsw" :: "D" (buffer), "d" (addr), "c" (count));
 }
 
-inline void delay() {
+void delay() {
   for(int i = 0; i < 1000000; i++) { // accurate time delay would require CPU ClockCycles/USec conversion
     __asm__ __volatile__ ("nop");
   }

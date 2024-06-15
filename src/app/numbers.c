@@ -1,17 +1,12 @@
-#ifndef __linux__
+#ifndef __GNUC__
 void* (*putchar)(char);
-const char * name() {
-    return "Numbers";
-}
+
 void setPutCharCallback(void* (*putchar_)(char)) {
   putchar = putchar_;
 }
 #else
-#include <cstdio>
+#include <stdio.h>
 void init();
-void putchar(char ch) {
-  printf("%c", ch);
-}
 int main() {
   init();
   return 0;
@@ -20,6 +15,10 @@ int main() {
 
 // --
 
+const char * name() {
+    return "Numbers";
+}
+
 void putstr(const char *str) {
   while(*str != '\0') {
     putchar(*str);
@@ -27,9 +26,9 @@ void putstr(const char *str) {
   }
 }
 
-int log10(unsigned int number) {
-  int i = 0;
-  int j = 1;
+int log10_(unsigned int number) {
+  unsigned int i = 0;
+  unsigned int j = 1;
   for(i = 0; i < 5; i++) {
     j *= 10;
     if (number < j) {
@@ -40,8 +39,13 @@ int log10(unsigned int number) {
 }
 
 void itoa(unsigned int number, char * str) {
+  if(number == 0) {
+    str[0] = '0';
+    str[1] = '\0';
+    return;
+  }
   int i = 0;
-  int digits = log10(number);
+  int digits = log10_(number);
   while(number > 0) {
     str[digits - i] = number % 10 + '0';
     number = number / 10;

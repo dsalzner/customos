@@ -586,6 +586,15 @@ ST_FUNC const char *get_tok_str(int v, CValue *cv)
    (but not stray) */
 ST_FUNC int handle_eob(void)
 {
+  /*
+    printf("[ ] tccpp.c::handle_eob\n");
+    #ifndef CUSTOMOS
+    fflush(NULL);
+    #else
+    graphicsFlush();
+    #endif
+  */
+
     BufferedFile *bf = file;
     int len;
 
@@ -1846,9 +1855,9 @@ ST_FUNC void preprocess(int is_bof)
                 continue;
 
             file->include_next_index = i + 1;
-#ifdef INC_DEBUG
+//#ifdef INC_DEBUG
             printf("%s: including %s\n", file->prev->filename, file->filename);
-#endif
+//#endif
             /* update target deps */
             dynarray_add(&s1->target_deps, &s1->nb_target_deps,
                     tcc_strdup(buf1));
@@ -1861,7 +1870,7 @@ ST_FUNC void preprocess(int is_bof)
             ch = file->buf_ptr[0];
             goto the_end;
         }
-        tcc_error("include file '%s' not found", buf);
+	//tcc_error("include file '%s' not found", buf);
 include_done:
         break;
     case TOK_IFNDEF:
@@ -2558,6 +2567,12 @@ static void parse_number(const char *p)
         break;
 
 /* return next token without macro substitution */
+#ifdef CUSTOMOS
+extern uint16_t screenWidth;
+extern  uint16_t screenHeight;
+uint16_t stepCounter = 0;
+#endif
+
 static inline void next_nomacro1(void)
 {
     int t, c, is_long, len;
@@ -2567,6 +2582,7 @@ static inline void next_nomacro1(void)
 
     p = file->buf_ptr;
  redo_no_start:
+
     c = *p;
     switch(c) {
     case ' ':
@@ -2984,7 +3000,6 @@ static void next_nomacro_spc(void)
     } else {
         next_nomacro1();
     }
-    //printf("token = %s\n", get_tok_str(tok, &tokc));
 }
 
 ST_FUNC void next_nomacro(void)

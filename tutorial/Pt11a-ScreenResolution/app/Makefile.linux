@@ -1,0 +1,5 @@
+all:
+	gcc -g example.c -o example && ./example && echo ""
+	gcc -g sirpins.c -o sirpinski && ./sirpins && echo ""
+	gcc -g fibonac.c -o fibonacci && ./fibonac && echo ""
+	gcc -g numbers.c -o numbers && ./numbers && echo ""

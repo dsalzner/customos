@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "gdt.h"
 #include "idt.h"
 #include "isrs.h"
+#include "timer.h"
 
 #if(INIT_RAMDISK == 1)
   #include "ramdisk.h"
@@ -51,7 +52,11 @@ extern "C"
 
 char cmdBuffer[120] = {};
 
+extern void shell_keyboard_down(char key, uint8_t scancode); // -- shell/shell.rs
+extern void application_keyboard_down(char key, uint8_t scancode); // -- tinycc_interpreter.c
 static void keyboardKeyDown(char key, uint8_t scancode) {
+  application_keyboard_down(key, scancode);
+
   if (TEXT_MODE_FROM_C == 1) {
     int8_t size = sizeof(cmdBuffer) / sizeof(cmdBuffer[0]);
     int8_t pos = strlen(cmdBuffer);
@@ -85,19 +90,27 @@ static void keyboardKeyDown(char key, uint8_t scancode) {
     }
   } else {
     // -- call rust
-    shellKeyboardDown(key, scancode);
+    shell_keyboard_down(key, scancode);
   }
 }
 
-static void keyboardKeyUp(char key, uint8_t scancode) { }
+static void keyboardKeyUp(char key, uint8_t scancode) {
+  UNUSED(key);
+  UNUSED(scancode);
+}
 
 int counterRead();
 void counterWrite(int counterValue);
 
-void kernel_main(struct multiboot_info* info) {
+extern void shell_update(); // -- in shell/shell.rs
+extern void shell_init(uint16_t w, uint16_t h); // -- in shell/shell.rs
+extern void shell_show_prompt(); // -- in shell/shell.rs
+typedef struct multiboot_info multiboot_info_t;
+void kernel_main(multiboot_info_t* info) {
+  UNUSED(info);
   if(TEXT_MODE_FROM_C == 0) {
     graphicsInit(); // note: we initialize graphics early so line-wrapping will work
-    shellInit(screenBuffer, screenWidth, screenHeight);
+    shell_init(screenWidth, screenHeight); // screenBuffer
   } else {
     terminal_initialize();
   }
@@ -124,18 +137,21 @@ void kernel_main(struct multiboot_info* info) {
     printf("\n[ ] counter value: %u\n", counterValue);
     counterWrite(++counterValue);
   } else {
-    shellShowPrompt();
+    shell_show_prompt();
   }
+
+  //timerInit(1000);
 
   while(true) {
     if (GRAPHICS_MODE_FROM_C == 0) {
       // -- call Rust
-      shellUpdate();
+      shell_update();
     }
     delay();
   }
 }
 
+extern int atoi(uint8_t *s); // -- in lib/tinycc_compat.c
 int counterRead() {
   char * fileName = "counter.txt";
   FIL file;

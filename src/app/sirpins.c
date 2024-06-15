@@ -1,17 +1,12 @@
-#ifndef __linux__
+#ifndef __GNUC__
 void* (*putchar)(char);
-const char * name() {
-    return "Sirpinski-Triangle";
-}
+
 void setPutCharCallback(void* (*putchar_)(char)) {
   putchar = putchar_;
 }
 #else
-#include <cstdio>
+#include <stdio.h>
 void init();
-void putchar(char ch) {
-  printf("%c", ch);
-}
 int main() {
   init();
   return 0;
@@ -20,9 +15,13 @@ int main() {
 
 // --
 
+const char * name() {
+    return "Sirpinski-Triangle";
+}
+
 int lineA[53];
 int lineB[53];
-bool swap = false;
+int swap = 0;
 
 void printLine(int * line, int row, int lines) {
   for(int i = 0; i < lines - row - 1; i++) {
@@ -61,11 +60,14 @@ void init() {
       next[i] = prev[i-1] + prev[i];
     }
     printLine(next, j, lines);
-    swap = !swap;
+
+    if(swap == 0) {
+      swap = 1;
+    } else {
+      swap = 0;
+    }
   }
   for(int i = 0; i < 52; i++) {
     putchar('=');
   }
-  
-  return;
 }

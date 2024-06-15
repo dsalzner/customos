@@ -1,0 +1,20 @@
+CC=gcc
+SRC := main.c
+OBJ := x86_64/tinycc_interpreter.o x86_64/libtcc.o x86_64/va_list.o x86_64/main.o
+INC := -I./tcc-0.9.27/ -I./tcc-0.9.27/include/ -I.
+CFLAGS := -g -DCONFIG_TCC_STATIC -DCONFIG_TCC_SEMLOCK
+
+LD=${CC}
+
+all: ${SRC} ${OBJ}
+	$(LD) -o main -O2 ${OBJ}
+
+x86_64/tinycc_interpreter.o:
+	${CC} -w ${INC} ${CFLAGS} -c tcc-0.9.27/libtcc.c -o x86_64/libtcc.o
+	${CC} -w ${INC} ${CFLAGS} -c tinycc_interpreter.c -o x86_64/tinycc_interpreter.o
+	${CC} -w ${INC} ${CFLAGS} -c tcc-0.9.27/lib/va_list.c -o x86_64/va_list.o
+	${CC} -w ${INC} ${CFLAGS} -c main.c -o x86_64/main.o
+
+clean:
+	rm -f x86_64/main
+	rm -f x86_64/*.o

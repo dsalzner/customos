@@ -12,7 +12,7 @@ Current Features:
 * a terminal/shell written in Rust that supports a small command set: list directory (```ls <path>```), read file (```rf <filename>```), ...
 * a small C compiler is built-in so functionality can be extended with code written inside of the CustomOS
 
-![CustomOS showing editing source code and then running it](img/customos-compiler.gif)
+![CustomOS running user space applicaitons](img/customos-snake.gif)
 
 For technical information see:
 
@@ -26,6 +26,7 @@ For technical information see:
 * [Pt8-Terminal](https://www.dennissalzner.de/programming/2024/02/04/So-CustomOsPt8-Terminal.html)
 * [Pt9-Enhancements](https://www.dennissalzner.de/programming/2024/02/04/Sa-CustomOsPt9-Enhancements.html)
 * [Pt10-EditorCompiler](https://www.dennissalzner.de/programming/2024/05/22/Mi-CustomOsPt10-Compiler.html)
+* [Pt11-ScreenResolutionUserSpaceApps](https://www.dennissalzner.de/programming/2024/06/08/Sa-CustomOsPt11-ScreenResolution.html)
 
 ## Dependencies
 
@@ -44,6 +45,19 @@ The ```gccbuild.sh``` script and Makefiles have been tested under Ubuntu 20.04 t
 Anyone is welcome to contribute, see [Guide on Contributing](CONTRIBUTING.md)
 
 ## Releases
+
+### 2024-06-08
+
+* reliable mode 12h graphics, 640x480 resolution, 4 bit per pixel
+* separate set_pixel and flush (double buffering) for efficient flicker-free writes to graphics buffer
+* handle larger file read/write
+* fixed compiler warnings
+  * Rust expects snake case function names and variables
+  * Disk interface had unused variables
+  * Graphics pointer arithmetic
+* user space applications with keyboard input and graphics output
+* user space application to list PCI devices and find network interface card
+* corrected color names for 16-bit mode
 
 ### 2024-05-30
 

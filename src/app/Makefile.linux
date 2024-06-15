@@ -1,5 +1,6 @@
 all:
-	gcc -g example.c -o example && ./example && echo ""
-	gcc -g sirpins.c -o sirpinski && ./sirpins && echo ""
-	gcc -g fibonac.c -o fibonacci && ./fibonac && echo ""
-	gcc -g numbers.c -o numbers && ./numbers && echo ""
+	gcc -g example.c -o example.bin       && ./example.bin && echo ""
+	gcc -g sirpins.c -o sirpins.bin       && ./sirpins.bin && echo ""
+	gcc -g fibonac.c -o fibonac.bin       && ./fibonac.bin && echo ""
+	gcc -g numbers.c -o numbers.bin       && ./numbers.bin && echo ""
+	gcc -g greensc.c -lX11 -o greensc.bin && ./greensc.bin && echo ""

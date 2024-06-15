@@ -21,7 +21,10 @@ all: run
 run: image
 	qemu-system-i386 \
 	-drive file=disk.fat,format=raw \
-	-drive file=myos.iso,index=2,media=cdrom -boot d
+	-drive file=myos.iso,index=2,media=cdrom -boot d \
+	-display gtk,zoom-to-fit=on \
+	-netdev user,id=net0,hostfwd=tcp::10122-:22,hostfwd=tcp::15901-:5900 \
+	-device rtl8139,netdev=net0,id=net0,mac=52:54:00:09:49:20
 
 image: disk
 	mkdir -p isodir/boot/grub
@@ -83,3 +86,4 @@ clean:
 	rm -f graphics/*.o
 	rm -f myos.iso
 	rm -rf isodir/
+	rm -rf disk-mount/

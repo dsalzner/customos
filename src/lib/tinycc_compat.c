@@ -63,6 +63,7 @@ char msg_buf[1024];
 // -- helper functions
 void exit(int retval) {
   printf("[!] Exit %d\n", retval);
+  graphicsFlush();
 }
 
 int fputs(const char *ptr, FILE *stream) {

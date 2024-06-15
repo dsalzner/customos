@@ -1,22 +1,23 @@
-#ifndef __linux__
+#ifndef __GNUC__
 void* (*putchar)(char);
-const char * name() {
-    return "Example Application";
-}
+
 void setPutCharCallback(void* (*putchar_)(char)) {
   putchar = putchar_;
 }
 #else
-#include <cstdio>
+#include <stdio.h>
 void init();
-void putchar(char ch) {
-  printf("%c", ch);
-}
 int main() {
   init();
   return 0;
 }
 #endif
+
+// --
+
+const char * name() {
+  return "Example Application";
+}
 
 // --
 

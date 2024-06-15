@@ -98,7 +98,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define ATA_BLOCKSIZE 512
 
-uint16_t diskPciReadWord(uint16_t bus, uint16_t slot, uint16_t func, uint16_t offset) {
+uint16_t pciReadWord(uint16_t bus, uint16_t slot, uint16_t func, uint16_t offset) {
   uint32_t address = 0x80000000; // Bit 31 set
   address |= (uint32_t)bus << 16;
   address |= (uint32_t)slot << 11;
@@ -118,22 +118,22 @@ uint16_t diskPciReadWord(uint16_t bus, uint16_t slot, uint16_t func, uint16_t of
 */
 uint32_t getFirstIdeControllerBaseAddress() {
   printf("[*] Scan for PCI IDE controllers\n");
-  for (uint8_t bus = 0; bus != PCI_MAX_BUS; bus++) {
-    for (uint8_t slot = 0; slot != PCI_MAX_SLOT; slot++) {
-      for (uint8_t func = 0; func != PCI_MAX_FUNC; func++) {
-        uint8_t class = diskPciReadWord(bus, slot, func, 0x0B);
-        uint8_t subclass = diskPciReadWord(bus, slot, func, 0x0A);
-        uint8_t vendorId = diskPciReadWord(bus, slot, func, 0x00);
-        uint8_t deviceId = diskPciReadWord(bus, slot, func, 0x02);
-        if (vendorId == 0x00FF) continue;
+  for (uint8_t bus = 0; bus != PCI_MAX_BUS - 1; bus++) {
+    for (uint8_t slot = 0; slot != PCI_MAX_SLOT - 1; slot++) {
+      for (uint8_t func = 0; func != PCI_MAX_FUNC - 1; func++) {
+	uint8_t classId = pciReadWord(bus, slot, func, 0x0B);
+	uint8_t subclassId = pciReadWord(bus, slot, func, 0x0A);
+	uint16_t vendorId = pciReadWord(bus, slot, func, 0x00);
+	uint16_t deviceId = pciReadWord(bus, slot, func, 0x02);
+	if (vendorId == 0xFFFF) continue;
         if (deviceId == 0x0000) continue;
-        printf("pci slot %d with %04x:%04x - %02x:%02x", slot, vendorId, deviceId, class, subclass);
-        if(class = 0x01 && subclass == 0x01) {
+	printf("pci slot %d with %04x:%04x - %02x:%02x", slot, vendorId, deviceId, classId, subclassId);
+	if((classId = 0x01) && (subclassId == 0x01)) {
             printf(" - IDE controller");
 
             char configSpace[256];
             for (int i=0; i!=128; i++) {
-              uint16_t tmp = diskPciReadWord(bus, slot, func, i*2);
+	      uint16_t tmp = pciReadWord(bus, slot, func, i*2);
               configSpace[i*2+0] = LO8(tmp);
               configSpace[i*2+1] = HI8(tmp);
             }
@@ -146,6 +146,7 @@ uint32_t getFirstIdeControllerBaseAddress() {
             bar[4] = *((uint32_t*)&configSpace[0x20]) & 0xFFFFFFFC;
 
             printf("\nIDE Controller Base-Address: %04x\n", bar[4]);
+
             return bar[4];
         }
         printf("\n");
@@ -177,7 +178,6 @@ struct SDisk getFirstHardDiskBaseAddress(uint32_t ideControllerBaseAddress) {
 
   struct SDisk disk;
 
-  uint32_t hardDiskBaseAddress = 0;
   uint16_t ide_controller_ioports[][8] = {
     { 0x1F0, 0x3F0, 0x170, 0x370, 0x1E8, 0x3E0, 0x168, 0x360 }
   };
@@ -270,7 +270,6 @@ struct SDisk getFirstHardDiskBaseAddress(uint32_t ideControllerBaseAddress) {
   return disk;
 }
 
-
 void idePortWrite (
     uint16_t base, // port address
     uint16_t devCtl,  // device addres
@@ -309,7 +308,7 @@ void ataInit() {
   }
 }
 
-void ataList(char * path) {
+void ataList(const char * path) {
   FRESULT res;
   DIR dir;
   res = f_opendir(&dir, path);
@@ -329,7 +328,7 @@ void ataList(char * path) {
   f_closedir(&dir);
 }
 
-void ataGetFileContents(char * filename, char * buffer, uint32_t bufferLen) {
+void ataGetFileContents(const char * filename, unsigned char * buffer, uint32_t bufferLen) {
   FIL file;
   FRESULT res;
   res = f_open(&file, filename, FA_READ);
@@ -341,10 +340,18 @@ void ataGetFileContents(char * filename, char * buffer, uint32_t bufferLen) {
     printf("file is too large to read\n");
     return;
   }
-  UINT br;
-  res = f_read(&file, buffer, fileSize, &br);
-  if (res != FR_OK) {
-      printf("failed to read from file %s. error=%u\n", filename, res);
+  UINT br = 0;
+  unsigned char tmp[1];
+  for(uint32_t i = 0; i < fileSize; i++) {
+    if (i > bufferLen) {
+      break;
+    }
+    // -- todo: currently reads byte for byte, inefficient
+    res = f_read(&file, tmp, 1, &br);
+    if (res != FR_OK) {
+	printf("failed to read from file %s. error=%u\n", filename, res);
+    }
+    buffer[i] = tmp[0];
   }
   f_close(&file);
   if (res != FR_OK) {
@@ -353,7 +360,7 @@ void ataGetFileContents(char * filename, char * buffer, uint32_t bufferLen) {
   buffer[fileSize] = '\0';
 }
 
-void ataSetFileContents(char * filename, char * buffer, uint32_t bufferLen) {
+void ataSetFileContents(const char * filename, unsigned char * buffer, uint32_t bufferLen) {
   FIL file;
   FRESULT res;
   res = f_open(&file, filename, FA_CREATE_ALWAYS | FA_WRITE);
@@ -361,8 +368,7 @@ void ataSetFileContents(char * filename, char * buffer, uint32_t bufferLen) {
     printf("failed to open file %s. error=%u\n", filename, res);
     return;
   }
-  //uint32_t bufferLen = sizeof(buffer) / sizeof(buffer[0]) * 8; // needs to be multiple of 8
-  
+  // -- todo: currently writes byte for byte, inefficient
   for(uint32_t i = 0; i < bufferLen; i++) {
     UINT br;
     res = f_write(&file, ((const void*)buffer) + i, (UINT)1, &br);
@@ -374,9 +380,9 @@ void ataSetFileContents(char * filename, char * buffer, uint32_t bufferLen) {
   f_close(&file);
 }
 
-void ataShowFileContents(char * filename) {
-  char buffer[4096]; // no dynamic memory allocation, so fixed to max size for now
-  ataGetFileContents(filename, buffer, 4096);
+void ataShowFileContents(const char * filename) {
+  unsigned char buffer[64000]; // no dynamic memory allocation, so fixed to max size for now
+  ataGetFileContents(filename, buffer, sizeof(buffer) / sizeof(buffer[0]));
   printf("%s", buffer);
 }
 
@@ -424,7 +430,7 @@ DRESULT disk_read(BYTE pdrv, BYTE* buffer, DWORD sector, UINT count) {
 
   // -- pio read
   unsigned int words = 256;  // every ATA drive has a sector-size of 512-byte.
-  char * bufptr = buffer;
+  unsigned char * bufptr = buffer;
   for (uint32_t i = 0; i < count; i++) {
     if (ide_polling (disk.base) != 0) {
         printf("[E] disk_read error\n");
@@ -443,7 +449,7 @@ DRESULT disk_write(BYTE pdrv, const BYTE* buffer, DWORD sector, UINT count) {
 
   // -- pio write
   unsigned int words = 256;  // every ATA drive has a sector-size of 512-byte.
-  char * bufptr = buffer;
+  const unsigned char * bufptr = buffer;
   for (UINT i = 0; i < count; i++) {
     ide_polling (disk.base); //ide_polling(channel, 0);
     __asm__ volatile("rep outsw" : : "c"(words), "d"(disk.base), "S"((uint32_t)bufptr));

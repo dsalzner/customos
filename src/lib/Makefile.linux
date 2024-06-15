@@ -8,13 +8,24 @@ LD=${CC}
 
 all: ${SRC} ${OBJ}
 	$(LD) -o main -O2 ${OBJ}
+	./main ../app/example.c
+	#./main ../app/sirpins.c
+	./main ../app/fibonac.c
+	#./main ../app/numbers.c
+	#./main ../app/greensc.c
+	#unset DEBUGINFOD_URLS
+	#gdb -ex run --args ./main ../app/greensc.c
+	#./main ../app/colors.c
+	#./main ../app/net-macaddr.c
+	./main ../app/asteroids.c
 
 x86_64/tinycc_interpreter.o:
-	${CC} -w ${INC} ${CFLAGS} -c tcc-0.9.27/libtcc.c -o x86_64/libtcc.o
-	${CC} -w ${INC} ${CFLAGS} -c tinycc_interpreter.c -o x86_64/tinycc_interpreter.o
-	${CC} -w ${INC} ${CFLAGS} -c tcc-0.9.27/lib/va_list.c -o x86_64/va_list.o
-	${CC} -w ${INC} ${CFLAGS} -c main.c -o x86_64/main.o
+	${CC} -g -w ${INC} ${CFLAGS} -c tcc-0.9.27/libtcc.c -o x86_64/libtcc.o
+	${CC} -g -w ${INC} ${CFLAGS} -c tinycc_interpreter.c -o x86_64/tinycc_interpreter.o
+	${CC} -g -w ${INC} ${CFLAGS} -c tcc-0.9.27/lib/va_list.c -o x86_64/va_list.o
+	${CC} -g -w ${INC} ${CFLAGS} -c main.c -o x86_64/main.o
 
 clean:
-	rm -f x86_64/main
-	rm -f x86_64/*.o
+	rm -f main
+	rm -rf x86_64/
+	mkdir x86_64/
