@@ -1,0 +1,8 @@
+*.o
+*.bin
+*.iso
+*.fat
+*.tar.gz
+out/
+build/
+isodir/

@@ -30,9 +30,9 @@ For technical information see:
 
 ## Dependencies
 
-The code is inspired by many other public domain CustomOS GitHub repos cited in the blog posts and most notably the guides and examples from the osdev-forums and wiki [1]
+See scripts `Pt1-CrossCompiler/gccbuild.sh` and `Pt8-Shell/rust-deps.sh`.
 
-1] https://wiki.osdev.org
+These install all dependencies that are required on fresh installs of Ubuntu 22.04 and Debian 12.
 
 ## Contributing & Compiling from source
 
@@ -43,6 +43,12 @@ For this you will need to first build the custom compile chain by running ``./Pt
 The ```gccbuild.sh``` script and Makefiles have been tested under Ubuntu 20.04 through 23.10. 
 
 Anyone is welcome to contribute, see [Guide on Contributing](CONTRIBUTING.md)
+
+## Credits
+
+The code is inspired by many other public domain CustomOS GitHub repos cited in the blog posts and most notably the guides and examples from the osdev-forums and wiki [1]
+
+1] https://wiki.osdev.org
 
 ## Releases
 

@@ -14,6 +14,7 @@ echo "[ ] Install dependencies"
 sudo apt -y install libgmp3-dev libmpfr-dev libisl-dev  libmpc-dev texinfo -y
 sudo apt -y install nasm qemu-system-i386 xorriso
 sudo apt -y install gcc-multilib # 32-bit libc and headers
+sudo apt -y install mtools # for grub-mkrescue mformat to produce iso
 
 echo "[ ] Create directories"
 rm -rf ${BASEDIR}/out/

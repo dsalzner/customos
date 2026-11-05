@@ -14,7 +14,8 @@ all: run
 run: image
 	qemu-system-i386 \
    -drive file=disk.fat,format=raw \
-	 -drive file=myos.iso,index=2,media=cdrom -boot d
+   -kernel myos.bin
+	 #-drive file=myos.iso,index=2,media=cdrom -boot d
 
 image: disk
 	mkdir -p isodir/boot/grub

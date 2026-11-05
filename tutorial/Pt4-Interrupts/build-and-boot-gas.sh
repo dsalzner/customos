@@ -3,7 +3,7 @@ set -e
 set -o xtrace
 BASEDIR=$(cd `dirname $0` && pwd)
 CC=${BASEDIR}/../Pt1-CrossCompiler/out/path/bin/i686-elf-gcc
-CC=${BASEDIR}/../Pt1-CrossCompiler/out/path/bin/i686-elf-as
+AS=${BASEDIR}/../Pt1-CrossCompiler/out/path/bin/i686-elf-as
 
 rm -rf $BASEDIR/build/*
 
@@ -34,10 +34,11 @@ else
 fi
 
 echo "[ ] Creating bootable CD-Image with Grub-Bootloader"
-mkdir -p isodir/boot/grub
-cp myos.bin isodir/boot/myos.bin
-cp ../grub.cfg isodir/boot/grub/grub.cfg
-grub-mkrescue -o myos.iso isodir
+#mkdir -p isodir/boot/grub
+#cp myos.bin isodir/boot/myos.bin
+#cp ../grub.cfg isodir/boot/grub/grub.cfg
+#grub-mkrescue -o myos.iso isodir
 
 echo "[ ] Booting in QEmu"
-qemu-system-i386 -cdrom myos.iso
+#qemu-system-i386 -cdrom myos.iso
+qemu-system-i386 -kernel myos.bin
